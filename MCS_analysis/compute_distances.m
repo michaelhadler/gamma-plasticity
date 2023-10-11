@@ -15,7 +15,7 @@
         % electrodes in proximity (value given in µm as 'ProximityVal', default 200 µm) and
         % distances calculated with shortestpath
 
-function distance_matrix = compute_distances(x,y,rule,varargin)
+function [distance_matrix, electrode_graph] = compute_distances(x,y,rule,varargin)
 
 dist_elec = 200;
 dist_calc = 200;
@@ -34,13 +34,13 @@ end
 
 if rule == 'cartesian'
     
-    xy_matrix = [x y];
+    xy_matrix = [x; y]';
     distance_matrix = squareform(pdist(xy_matrix));
 
 elseif rule == 'neighbors'
 
     %Compute cartesian distances
-    xy_matrix = [x y];
+    xy_matrix = [x; y]';
     distance_matrix = squareform(pdist(xy_matrix));
     
     %Create graph: Edges between neighboring electrodes
@@ -49,16 +49,20 @@ elseif rule == 'neighbors'
     connections(distance_matrix>cut_off)=0;
     connections_graph = graph(connections);
     distance_matrix = distances(connections_graph);
+    %for export
+    electrode_graph = simplify(connections_graph) ;
 
 elseif rule == 'proximities'
 
     %Compute cartesian distances
-    xy_matrix = [x y];
+    xy_matrix = [x; y]';
     distance_matrix = squareform(pdist(xy_matrix));
     %Create graph: Edges between electrodes in proximity (< 200 µm)
     connections = distance_matrix;
     connections(distance_matrix>=dist_calc)=0;
     connections_graph = graph(connections);
     distance_matrix = distances(connections_graph);
+    %for export
+    electrode_graph = simplify(connections_graph) ;
 
 end
